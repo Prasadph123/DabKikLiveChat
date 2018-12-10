@@ -28,6 +28,10 @@ allprojects {
        /* maven {
             url "http://dabkick.bitnamiapp.com/artifactory/android-dev-engine-local/"
         }*/
+
+        maven {
+            url "http://dabkick.bitnamiapp.com/artifactory/android-dev-engine-local/"
+        }
     }
 }
 

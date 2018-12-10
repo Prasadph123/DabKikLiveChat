@@ -1,6 +1,9 @@
 package sample.sdk.dabkick.livechat;
 
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.AppCompatImageView;
@@ -13,6 +16,17 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.dabkick.engine.Public.CallbackListener;
+import com.dabkick.engine.Public.LiveChatCallbackListener;
+import com.dabkick.engine.Public.MessageInfo;
+import com.dabkick.engine.Public.UserInfo;
+import com.dabkick.engine.Public.UserPresenceCallBackListener;
+import com.twilio.video.Room;
+
+import java.util.Objects;
+
 import sample.sdk.dabkick.livechat.model.ChatRoom;
 
 public class ChatRoomFragment extends Fragment implements ChatSessionFragment.ChatBackPress {
@@ -32,6 +46,9 @@ public class ChatRoomFragment extends Fragment implements ChatSessionFragment.Ch
     static boolean isDetailChatOpen = false;
 
     private boolean isInBckGrnd = false;
+    private String TAG = ChatRoomFragment.class.getSimpleName();
+    private LiveChatCallbackListener mLiveChatListener;
+    private UserPresenceCallBackListener mUserPresenceCallBackListener;
 
 
     public ChatRoomFragment() {
@@ -141,6 +158,85 @@ public class ChatRoomFragment extends Fragment implements ChatSessionFragment.Ch
         return view;
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+         mLiveChatListener = new LiveChatCallbackListener() {
+                @Override
+            public void receivedChatMessage(String s, MessageInfo messageInfo) {
+                Log.d(TAG, "receivedChatMessage: Message Received : "+s+"\n Message info \n Username : "+messageInfo.getUserName()+"\n chat message : "+messageInfo.getChatMessage());
+//                    Toast.makeText(getActivity(), "receivedChatMessage: Message Received : "+s+"\n Message info \n Username : "+messageInfo.getUserName()+"\n chat message : "+messageInfo.getChatMessage(), Toast.LENGTH_SHORT).show();
+
+            }
+        };
+
+        mUserPresenceCallBackListener = new UserPresenceCallBackListener() {
+            @Override
+            public void userEntered(String s, UserInfo userInfo) {
+
+                Log.d(TAG, "userEntered: "+s);
+                Toast.makeText(getActivity(), "user has entered "+userInfo.getName(), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void userExited(String s, UserInfo userInfo) {
+
+                Toast.makeText(getActivity(), "user has exited "+userInfo.getName(), Toast.LENGTH_SHORT).show();
+
+            }
+
+            @Override
+            public void userDataUpdated(String s, UserInfo userInfo) {
+                Toast.makeText(getActivity(), "user data has been updated : "+userInfo.getName(), Toast.LENGTH_SHORT).show();
+
+
+            }
+
+            @Override
+            public void getNumberOfUsersLiveNow(String s, int i) {
+
+                Toast.makeText(getActivity(), "Number of users live now : "+i, Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+
+            UserInfo info = new UserInfo();
+            info.setName("anonymous");
+            info.setAppSpecificUserID("ABCXYZ");
+            info.setProfilePicUrl(null);
+            info.setUserId("anaon123");
+
+            ((HomepageActivity) Objects.requireNonNull(getActivity())).dkLiveChat.joinSession(getRoomName(0), info, new CallbackListener() {
+                @Override
+                public void onSuccess(String s, Object... objects) {
+                    Log.d(TAG, "onSuccess: ");
+                    Toast.makeText(getActivity(), "Joined session succesfully", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onError(String s, Object... objects) {
+                    Log.d(TAG, "onError: ");
+                    Toast.makeText(getActivity(), "Error joining session" , Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            ((HomepageActivity) Objects.requireNonNull(getActivity())).dkLiveChat.subscribe(getRoomName(0), mLiveChatListener, mUserPresenceCallBackListener, new CallbackListener() {
+                @Override
+                public void onSuccess(String s, Object... objects) {
+
+                }
+
+                @Override
+                public void onError(String s, Object... objects) {
+
+                }
+            });
+        }
+    }
 
     @Override
     public void onResume() {

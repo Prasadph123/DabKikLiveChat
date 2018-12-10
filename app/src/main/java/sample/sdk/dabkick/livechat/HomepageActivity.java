@@ -2,8 +2,13 @@ package sample.sdk.dabkick.livechat;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+
+import com.dabkick.engine.Public.Authentication;
+import com.dabkick.engine.Public.CallbackListener;
+import com.dabkick.engine.Public.DKLiveChat;
 
 import java.util.ArrayList;
 
@@ -16,6 +21,8 @@ public class HomepageActivity extends AppCompatActivity {
     public ChatRoomPagerAdapter mRoomPagerAdapter;
     ArrayList<ChatRoom> mChatRoomList;
     FrameLayout chatSessionFragContainer;
+    public DKLiveChat dkLiveChat;
+    private String TAG = HomepageActivity.class.getSimpleName();
 
 
     public void findViews() {
@@ -32,6 +39,7 @@ public class HomepageActivity extends AppCompatActivity {
 
         findViews();
 
+        initChats();
         mChatRoomList = new ArrayList<ChatRoom>();
         mRoomPagerAdapter = new ChatRoomPagerAdapter(getSupportFragmentManager(), HomepageActivity.this);
         mChatRoomPager.setOffscreenPageLimit(0);
@@ -51,7 +59,31 @@ public class HomepageActivity extends AppCompatActivity {
 
             }
         });
+
+
+
     }
+
+    private void initChats() {
+        /**
+         * Sample app developer id and key
+         */
+        Authentication auth = new Authentication("DKe1ac069ddf1011e7a1d8062", "f84bd8d546b10cff2b601093e47f61");
+
+        dkLiveChat = new DKLiveChat(getApplicationContext(), auth, new CallbackListener() {
+            @Override
+            public void onSuccess(String s, Object... objects) {
+                Log.d(TAG, "onSuccess: ");
+            }
+
+            @Override
+            public void onError(String s, Object... objects) {
+
+            }
+        });
+
+    }
+
 
     @Override
     protected void onResume() {
